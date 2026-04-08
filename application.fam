@@ -1,0 +1,12 @@
+App(
+    appid="furnfc_ascii",
+    name="FurNFC",
+    apptype=FlipperAppType.EXTERNAL,
+    fap_icon="fapicon.png",
+    entry_point="furnfc_ascii_app",
+    stack_size=4 * 1024,
+    fap_category="Tools",
+    fap_version=(1, 0),
+    fap_description="Decode ASCII text from Mifare Classic .nfc dumps.",
+    fap_author="MeiosisKMZ",
+)
