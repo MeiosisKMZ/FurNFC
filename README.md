@@ -1,19 +1,18 @@
 # FurNFC ASCII
 
-App externe Flipper Zero pour lire un tag Mifare Classic directement et pour
-decoder aussi un dump `.nfc`.
+External Flipper Zero app to directly read a Mifare Classic tag and also decode a `.nfc` dump.
 
-## Ce que fait l'app
+## What the app does
 
-- Lit un tag Mifare Classic directement depuis le Flipper
-- Boucle en attente sur `Lecture NFC...` jusqu'au tag ou jusqu'a `Back`
-- Tente les cles par defaut `FF FF FF FF FF FF` sur tous les secteurs
-- Permet aussi de saisir une cle Mifare perso en hex
-- Permet aussi de choisir un autre fichier `.nfc`
-- Ignore automatiquement les blocs trailer de secteur (`FF FF FF ...`)
-- Affiche uniquement les caracteres ASCII lisibles dans une UI scrollable
+- Reads a Mifare Classic tag directly from the Flipper  
+- Loops on `Reading NFC...` until a tag is detected or `Back` is pressed  
+- Tries the default keys `FF FF FF FF FF FF` on all sectors  
+- Also allows entering a custom Mifare key in hex  
+- Also allows selecting another `.nfc` file  
+- Automatically ignores sector trailer blocks (`FF FF FF ...`)  
+- Displays only readable ASCII characters in a scrollable UI  
 
 ## Structure
 
-- `application.fam` : manifeste FAP compatible Unleashed/OFW
-- `furnfc_ascii.c` : code de l'app
+- `application.fam`: FAP manifest compatible with Unleashed/OFW  
+- `furnfc_ascii.c`: app source code
