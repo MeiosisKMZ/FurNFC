@@ -169,7 +169,7 @@ static void furnfc_ascii_render_data(
 
     furi_string_cat_printf(app->text, "Source: %s\n", source_kind);
     if(source_name && source_name[0]) {
-        furi_string_cat_printf(app->text, "Nom: %s\n", source_name);
+        furi_string_cat_printf(app->text, "Name: %s\n", source_name);
     }
 
     size_t uid_len = 0;
@@ -206,32 +206,32 @@ static void furnfc_ascii_render_data(
     }
 
     if(!found_text) {
-        furi_string_cat_str(app->text, "(Aucun texte ASCII lisible trouve)\n");
+        furi_string_cat_str(app->text, "(No readable ASCII text found)\n");
     }
 }
 
 static void furnfc_ascii_show_help(FurNfcApp* app) {
     furi_string_printf(
         app->text,
-        "FurNFC ASCII\n"
+        "FurNFC (MeiosisKMZ)\n"
         "\n"
-        "Cette app peut:\n"
-        "- lire un tag Mifare Classic\n"
-        "  directement depuis le Flipper\n"
-        "- decoder un fichier .nfc\n"
+        "This app can:\n"
+        "- read a Mifare Clasic tag\n"
+        "  directly from the Flipper\n"
+        "- decode .nfc files\n"
         "\n"
-        "Le decodeur ignore les blocs\n"
-        "trailer de secteur et les octets\n"
-        "FF / 00 inutiles.\n"
+        "The decoder ignores sector\n"
+        "trailer blocks and unused\n"
+        "FF / 00 bytes.\n"
         "\n"
-        "Lecture directe:\n"
-        "le mode live tente les cles par\n"
-        "defaut FF FF FF FF FF FF sur tous\n"
-        "les secteurs, puis ta cle perso\n"
-        "si tu en as configure une.\n"
+        "Live reading:\n"
+        "live mode tries default key\n"
+        " FF FF FF FF FF FF on all\n"
+        "sectors, then your custom key\n"
+        "if you configured one.\n"
         "\n"
-        "Fichier:\n"
-        "choisis simplement un dump .nfc\n");
+        "File:\n"
+        "Just choose a .nfc dump\n");
     furnfc_ascii_show_text(app);
 }
 
@@ -251,33 +251,33 @@ static bool furnfc_ascii_decode_file(FurNfcApp* app, FuriString* path) {
         if(!flipper_format_buffered_file_open_existing(ff, furi_string_get_cstr(path))) {
             furi_string_printf(
                 app->text,
-                "Impossible d'ouvrir:\n%s\n\n"
-                "Place le fichier sur la carte SD\n"
-                "puis relance la lecture.",
+                "Unable to open:\n%s\n\n"
+                "Put the file on the SD card\n"
+                "then retry reading.",
                 furi_string_get_cstr(path));
             break;
         }
 
         if(!flipper_format_read_header(ff, header, &version) ||
            !furi_string_equal_str(header, FURNFC_FILETYPE)) {
-            furi_string_set_str(app->text, "Fichier NFC invalide.");
+            furi_string_set_str(app->text, "Invalid NFC file.");
             break;
         }
 
         if(!mf_classic_load(data, ff, version)) {
-            furi_string_set_str(app->text, "Impossible de decoder ce dump Mifare Classic.");
+            furi_string_set_str(app->text, "Can't decode this Mifare Classic dump.");
             break;
         }
 
         if(!flipper_format_rewind(ff) || !flipper_format_read_string(ff, "Device type", value) ||
            !furi_string_equal_str(value, "Mifare Classic")) {
-            furi_string_set_str(app->text, "Seuls les dumps Mifare Classic sont supportes.");
+            furi_string_set_str(app->text, "Only Mifare Classic dumps are supported.");
             break;
         }
 
         path_extract_filename(path, basename, false);
         furnfc_ascii_render_data(
-            app, data, "Fichier .nfc", furi_string_get_cstr(basename), NULL);
+            app, data, ".nfc file", furi_string_get_cstr(basename), NULL);
         ok = true;
     } while(false);
 
@@ -325,17 +325,17 @@ static int32_t furnfc_ascii_live_read_thread(void* context) {
 
         data->type = type;
         bool read_ok = furnfc_ascii_try_read_with_key(app, &default_key, type, data, &error);
-        const char* note = (error == MfClassicErrorPartialRead) ? "Note: lecture partielle" : NULL;
+        const char* note = (error == MfClassicErrorPartialRead) ? "Note: partial read" : NULL;
 
         if((!read_ok) && app->custom_key_valid) {
             mf_classic_reset(data);
             data->type = type;
             read_ok = furnfc_ascii_try_read_with_key(app, &app->custom_key, type, data, &error);
-            note = (error == MfClassicErrorPartialRead) ? "Note: lecture partielle" : NULL;
+            note = (error == MfClassicErrorPartialRead) ? "Note: partial read" : NULL;
         }
 
         if(read_ok) {
-            furnfc_ascii_render_data(app, data, "Lecture directe", NULL, note);
+            furnfc_ascii_render_data(app, data, "Live Read", NULL, note);
             view_dispatcher_send_custom_event(app->view_dispatcher, FurNfcCustomEventReadSuccess);
             break;
         }
@@ -349,7 +349,7 @@ static int32_t furnfc_ascii_live_read_thread(void* context) {
 
 static void furnfc_ascii_start_live_read(FurNfcApp* app) {
     furnfc_ascii_stop_live_read(app);
-    furnfc_ascii_show_popup(app, "Lecture NFC...", "Approche le tag\na l'arriere\n\nBack pour quitter");
+    furnfc_ascii_show_popup(app, "Reading NFC...", "Hold the tag\nnear the back\n\nBack to quit");
     app->live_read_stop = false;
     app->live_read_thread =
         furi_thread_alloc_ex("FurNfcRead", 4096, furnfc_ascii_live_read_thread, app);
@@ -360,13 +360,13 @@ static bool furnfc_ascii_key_validator(const char* text, FuriString* error, void
     UNUSED(context);
 
     if(strlen(text) != 12) {
-        furi_string_set_str(error, "12 hex requis");
+        furi_string_set_str(error, "12 hex required");
         return false;
     }
 
     for(size_t i = 0; i < 12; i++) {
         if(!isxdigit((unsigned char)text[i])) {
-            furi_string_set_str(error, "Hex invalide");
+            furi_string_set_str(error, "Invalid input");
             return false;
         }
     }
@@ -386,17 +386,17 @@ static void furnfc_ascii_key_input_done(void* context) {
 
     furi_string_printf(
         app->text,
-        "Cle Mifare enregistree.\n\n"
-        "Valeur: %.12s\n\n"
-        "La lecture live essayera d'abord\n"
-        "FF FF FF FF FF FF puis cette cle.",
+        "Mifare key saved.\n\n"
+        "Value: %.12s\n\n"
+        "Live reading will try:\n"
+        "FF FF FF FF FF FF then the key.",
         app->key_input);
     furnfc_ascii_show_text(app);
 }
 
 static void furnfc_ascii_open_key_input(FurNfcApp* app) {
     text_input_reset(app->text_input);
-    text_input_set_header_text(app->text_input, "Cle Mifare (12 hex)");
+    text_input_set_header_text(app->text_input, "Mifare Key (12 hex)");
     text_input_set_validator(app->text_input, furnfc_ascii_key_validator, app);
     text_input_set_result_callback(
         app->text_input, furnfc_ascii_key_input_done, app, app->key_input, sizeof(app->key_input), false);
@@ -453,17 +453,17 @@ static FurNfcApp* furnfc_ascii_alloc(void) {
     app->current_view = FurNfcViewMenu;
 
     submenu_add_item(
-        app->submenu, "Lire le tag", FurNfcMenuReadTag, furnfc_ascii_menu_callback, app);
+        app->submenu, "Read tag", FurNfcMenuReadTag, furnfc_ascii_menu_callback, app);
     submenu_add_item(
         app->submenu,
-        "Choisir un .nfc",
+        "Choose a .nfc file",
         FurNfcMenuChooseFile,
         furnfc_ascii_menu_callback,
         app);
     submenu_add_item(
-        app->submenu, "Cle Mifare", FurNfcMenuSetKey, furnfc_ascii_menu_callback, app);
+        app->submenu, "Mifare Key", FurNfcMenuSetKey, furnfc_ascii_menu_callback, app);
     submenu_add_item(
-        app->submenu, "Aide", FurNfcMenuShowHelp, furnfc_ascii_menu_callback, app);
+        app->submenu, "Help", FurNfcMenuShowHelp, furnfc_ascii_menu_callback, app);
 
     view_dispatcher_set_custom_event_callback(
         app->view_dispatcher, furnfc_ascii_custom_event_callback);
