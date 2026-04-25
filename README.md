@@ -1,4 +1,4 @@
-# FurNFC App (Flipper Zero)
+# FurNFC ASCII (Flipper Zero)
 
 ## Introduction
 
@@ -44,7 +44,7 @@ The goal is to quickly visualize human-readable data stored inside NFC memory bl
 * Submenu-driven interface
 * Popup status view during scanning
 * Scrollable text output view
-* Help screen (French localized)
+* Help screen
 * File picker for `.nfc` files
 * Text input for Mifare keys
 
@@ -75,8 +75,6 @@ Copy the compiled file to:
 ```
 ext/apps/nfc/
 ```
-
-Then reboot your Flipper Zero.
 
 Launch:
 
@@ -140,7 +138,7 @@ ext/apps/nfc/
 
 When launching the app, you will see options:
 
-#### Lire le tag
+#### Read tag
 
 Live NFC scan mode:
 
@@ -150,7 +148,7 @@ Live NFC scan mode:
 * Displays decoded ASCII result
 
 
-#### Cle Mifare
+#### Mifare Key
 
 * Input custom 6-byte hex key (12 hex characters)
 * Example:
@@ -159,9 +157,9 @@ Live NFC scan mode:
   A0A1A2A3A4A5
   ```
 
-#### Aide
+#### Help
 
-* Shows built-in help screen (French)
+* Shows built-in help screen
 * Explains decoding behavior and limitations
 
 ---
